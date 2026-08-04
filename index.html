@@ -1,0 +1,1626 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧬 Hermes 进化记录</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root{
+  --accent1:#667eea; --accent2:#764ba2; --accent3:#f093fb;
+  --grad:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+  --title-grad:linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f093fb 100%);
+  --text:#e0e0e0; --sub:#ccc; --weak:#888; --dim:#666;
+  --card:rgba(255,255,255,0.03); --card-border:rgba(255,255,255,0.08);
+  --radius:16px; --pad:24px;
+}
+body{
+  font-family:'Noto Sans SC',-apple-system,BlinkMacSystemFont,'Segoe UI',
+    'Microsoft YaHei','PingFang SC',sans-serif;
+  background:linear-gradient(135deg,#0a0a0f 0%,#1a1a2e 50%,#16213e 100%);
+  min-height:100vh; color:var(--text); line-height:1.6; padding-bottom:60px;
+}
+/* ===== 头部 ===== */
+.header{text-align:center;padding:64px 20px 44px}
+.avatar{
+  width:120px;height:120px;border-radius:50%;margin:0 auto 24px;
+  background:var(--grad);
+  border:3px solid rgba(102,126,234,0.5);
+  box-shadow:0 0 60px rgba(102,126,234,0.4);
+  animation:pulse 3s ease-in-out infinite;
+  display:flex;align-items:center;justify-content:center;
+  font-size:56px;
+}
+@keyframes pulse{
+  0%,100%{box-shadow:0 0 60px rgba(102,126,234,0.4)}
+  50%{box-shadow:0 0 90px rgba(102,126,234,0.65)}
+}
+.header h1{
+  font-size:2.5rem;font-weight:700;letter-spacing:1px;
+  background:var(--title-grad);-webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.header .subtitle{color:var(--weak);font-size:1rem;margin-top:8px}
+.header .updated{color:var(--dim);font-size:.8rem;margin-top:10px}
+.header .updated b{color:var(--sub);font-weight:500}
+/* ===== 统计概览 ===== */
+.stats-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:16px;max-width:900px;margin:0 auto 50px;padding:0 20px;
+}
+.stat-card{
+  background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);
+  padding:var(--pad);text-align:center;backdrop-filter:blur(10px);
+  transition:all .3s ease;
+}
+.stat-card:hover{transform:translateY(-4px);border-color:rgba(102,126,234,0.5)}
+.stat-number{
+  font-size:clamp(1.35rem,4vw,2.2rem);font-weight:700;white-space:nowrap;
+  letter-spacing:-0.5px;overflow:hidden;text-overflow:ellipsis;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.stat-label{font-size:.85rem;color:var(--weak);margin-top:4px}
+/* ===== 进化概览卡 ===== */
+.evo-card{
+  background:var(--grad);border-radius:var(--radius);padding:30px 24px;
+  display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
+  box-shadow:0 20px 50px rgba(102,126,234,0.25);
+}
+.evo-metric{text-align:center;color:#fff}
+.evo-metric .icon{font-size:1.6rem}
+.evo-metric .num{font-size:1.7rem;font-weight:700;margin-top:4px}
+.evo-metric .lbl{font-size:.78rem;opacity:.85;margin-top:2px}
+/* ===== 通用区块 ===== */
+.section{max-width:1000px;margin:0 auto 60px;padding:0 20px}
+.section-title{
+  display:flex;align-items:center;gap:12px;font-size:1.5rem;font-weight:600;
+  margin-bottom:24px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.1);
+  flex-wrap:nowrap;min-width:0;
+}
+.section-title .tag{
+  font-size:.72rem;font-weight:400;color:var(--weak);background:rgba(255,255,255,0.05);
+  border:1px solid var(--card-border);padding:2px 12px;border-radius:99px;
+  margin-left:auto;white-space:nowrap;flex-shrink:0;
+}
+/* ===== 活动条形图 ===== */
+.bars{display:flex;align-items:flex-end;gap:8px;height:130px;padding:10px 4px 0}
+.bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
+.bar .col{width:100%;max-width:34px;border-radius:6px 6px 0 0;background:var(--grad);
+  opacity:.85;transition:opacity .15s}
+.bar .col:hover{opacity:1}
+.bar .d{font-size:.68rem;color:var(--dim);white-space:nowrap}
+.bar .v{font-size:.62rem;color:var(--weak)}
+/* ===== 技能卡片 ===== */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.chip{cursor:pointer;border:1px solid var(--card-border);background:rgba(255,255,255,0.05);
+  color:var(--weak);border-radius:99px;padding:4px 14px;font-size:.82rem;transition:all .2s}
+.chip:hover{border-color:rgba(102,126,234,0.6);color:var(--text)}
+.chip.on{background:var(--grad);color:#fff;font-weight:600;border-color:transparent}
+.skills-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.skill-card{
+  position:relative;overflow:hidden;
+  background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);
+  padding:var(--pad);transition:all .3s ease;
+  display:flex;flex-direction:column;min-width:0;
+}
+.skill-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--grad);transform:scaleX(0);transform-origin:left;
+  transition:transform .3s ease;
+}
+.skill-card:hover{transform:translateY(-4px);border-color:rgba(102,126,234,0.3);
+  box-shadow:0 20px 40px rgba(0,0,0,0.3)}
+.skill-card:hover::before{transform:scaleX(1)}
+.skill-header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px}
+.skill-name-wrap{flex:1;min-width:0}
+.skill-name{font-size:1.05rem;font-weight:600;color:#fff;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.skill-name-en{font-size:.72rem;color:var(--dim);margin-top:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.skill-category{flex-shrink:0;font-size:.7rem;padding:4px 10px;
+  background:rgba(102,126,234,0.2);border-radius:20px;color:#a5b4fc;white-space:nowrap;
+  max-width:45%;overflow:hidden;text-overflow:ellipsis;text-align:right}
+.skill-description{font-size:.88rem;color:#999;margin-bottom:14px;flex-grow:1;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.skill-tags{display:flex;flex-wrap:wrap;gap:6px}
+.skill-tag{font-size:.72rem;padding:3px 10px;
+  background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+  border-radius:20px;color:var(--weak)}
+.skill-created{font-size:.7rem;color:var(--dim);margin-top:auto;padding-top:12px;
+  display:flex;gap:10px;flex-wrap:wrap}
+.skill-created .agent{color:#0a0a0f;background:var(--accent3);border-radius:99px;
+  padding:1px 10px;font-weight:600}
+.empty-note{color:var(--dim);font-style:italic;font-size:.9rem}
+/* ===== 记忆卡片 ===== */
+.memory-card{background:var(--card);border:1px solid var(--card-border);
+  border-radius:var(--radius);padding:var(--pad);margin-bottom:16px;transition:all .3s ease}
+.memory-card:hover{transform:translateY(-2px);border-color:rgba(102,126,234,0.3)}
+.memory-type{display:inline-block;font-size:.75rem;padding:4px 12px;border-radius:20px;margin-bottom:10px}
+.memory-type.user{background:rgba(236,72,153,0.2);color:#f472b6}
+.memory-type.system{background:rgba(16,185,129,0.2);color:#34d399}
+.memory-type.core{background:rgba(102,126,234,0.2);color:#a5b4fc}
+.memory-content{font-size:.88rem;color:var(--sub);word-break:break-word}
+/* ===== 时间线 ===== */
+.timeline{position:relative;padding-left:30px}
+.timeline::before{
+  content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;
+  background:linear-gradient(to bottom,#667eea,#764ba2,rgba(118,75,162,0.1),transparent);
+}
+.tl-day{position:relative;padding-bottom:36px}
+.tl-day::before{
+  content:'';position:absolute;left:-26px;top:5px;width:12px;height:12px;border-radius:50%;
+  background:var(--grad);box-shadow:0 0 20px rgba(102,126,234,0.5);
+}
+.tl-day.baseline::before{background:#555;box-shadow:0 0 12px rgba(255,255,255,0.15)}
+.tl-date{font-size:.8rem;color:var(--dim);margin-bottom:8px;display:flex;gap:10px;align-items:center}
+.tl-date .today-badge{font-size:.65rem;color:var(--accent3);border:1px solid rgba(240,147,251,0.5);
+  padding:1px 10px;border-radius:99px}
+.timeline-content{
+  background:var(--card);border:1px solid var(--card-border);border-radius:12px;padding:20px;
+  transition:all .3s ease;
+}
+.timeline-content:hover{border-color:rgba(102,126,234,0.35)}
+.timeline-title{font-size:1.05rem;font-weight:600;color:#fff;margin-bottom:8px}
+.timeline-desc{font-size:.88rem;color:#999}
+.hl{background:rgba(102,126,234,0.1);border-left:3px solid var(--accent1);
+  border-radius:8px;padding:8px 12px;margin:8px 0;font-size:.85rem;color:var(--sub)}
+.ev-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.ev-tag{font-size:.7rem;padding:2px 10px;border-radius:20px;background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.1);color:var(--weak)}
+.ev-tag.add{color:#4ade80;border-color:rgba(74,222,128,0.35);background:rgba(74,222,128,0.08)}
+.ev-tag.update{color:#f5c95c;border-color:rgba(245,201,92,0.35);background:rgba(245,201,92,0.08)}
+.ev-tag.memory{color:#c4b5fd;border-color:rgba(196,181,253,0.35);background:rgba(196,181,253,0.08)}
+.ev-tag.session{color:#67e8f9;border-color:rgba(103,232,249,0.35);background:rgba(103,232,249,0.08)}
+.ev-tag.cron{color:#93c5fd;border-color:rgba(147,197,253,0.35);background:rgba(147,197,253,0.08)}
+/* ===== 未来方向 ===== */
+.future-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
+.future-card{background:var(--card);border:1px dashed rgba(102,126,234,0.35);
+  border-radius:var(--radius);padding:var(--pad);transition:all .3s ease}
+.future-card:hover{transform:translateY(-4px);border-color:rgba(102,126,234,0.7);
+  box-shadow:0 20px 40px rgba(0,0,0,0.3)}
+.future-card .icon{font-size:1.5rem}
+.future-card .title{font-size:1rem;font-weight:600;color:#fff;margin:8px 0 6px}
+.future-card .desc{font-size:.83rem;color:var(--weak)}
+/* ===== 自动化 ===== */
+.cron-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.cron-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);
+  padding:18px 20px;transition:all .3s ease}
+.cron-card:hover{border-color:rgba(102,126,234,0.4)}
+.cron-card .nm{font-weight:600;font-size:.92rem;color:#fff}
+.cron-card .sch{color:var(--accent1);font-size:.78rem;margin-top:4px}
+/* ===== 页脚 ===== */
+.footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem}
+.footer code{color:var(--weak);font-size:.78rem}
+.footer a{color:var(--accent1);text-decoration:none}
+/* ===== 响应式 ===== */
+@media(max-width:600px){
+  .header h1{font-size:1.8rem}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .evo-card{grid-template-columns:1fr}
+  .avatar{width:96px;height:96px;font-size:44px}
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="avatar">🧬</div>
+  <h1>Hermes 进化记录</h1>
+  <p class="subtitle">AI 能力成长追踪</p>
+  <p class="updated">🕐 最后更新 <b>2026-08-04 14:51:39</b> · 🌱 记录始于 <b>2026-08-03</b></p>
+</div>
+
+<div class="stats-grid"><div class="stat-card"><div class="stat-number">111</div><div class="stat-label">技能总数 · 9 个自主创建</div></div><div class="stat-card"><div class="stat-number">7</div><div class="stat-label">记忆条目</div></div><div class="stat-card"><div class="stat-number">4</div><div class="stat-label">累计会话</div></div><div class="stat-card"><div class="stat-number">2.2M</div><div class="stat-label">累计 Tokens</div></div><div class="stat-card"><div class="stat-number">$0.29</div><div class="stat-label">累计成本</div></div><div class="stat-card"><div class="stat-number">2</div><div class="stat-label">活跃天数</div></div></div>
+
+<div class="section">
+  <h2 class="section-title"><span>📈</span> 进化概览</h2>
+  
+    <div class="evo-card">
+      <div class="evo-metric"><div class="icon">✨</div><div class="num">41</div><div class="lbl">累计进化事件</div></div>
+      <div class="evo-metric"><div class="icon">📈</div><div class="num">2</div><div class="lbl">进化记录天数</div></div>
+      <div class="evo-metric"><div class="icon">🔥</div><div class="num">41</div><div class="lbl">今日进化（技能+记忆）</div></div>
+    </div>
+</div>
+
+<div class="section">
+  <h2 class="section-title"><span>📊</span> 最近活动<span class="tag">近 2 天 · 会话数</span></h2>
+  <div class="bars"><div class="bar"><div class="col" style="height:88px" title="2026-08-03: 2 次会话"></div><div class="v">2</div><div class="d">08-03</div></div><div class="bar"><div class="col" style="height:88px" title="2026-08-04: 2 次会话"></div><div class="v">2</div><div class="d">08-04</div></div></div>
+</div>
+
+<div class="section">
+  <h2 class="section-title"><span>📅</span> 进化时间线<span class="tag">2 条记录</span></h2>
+  <div class="timeline">
+      <div class="tl-day">
+        <div class="tl-date">2026-08-04 <span class="today-badge">今日</span></div>
+        <div class="timeline-content">
+          <div class="timeline-title">进化日 · 2026-08-04</div>
+          <div class="timeline-desc">2 次会话 · 174 条消息 · 88 次工具调用 · 337555.4k tokens · $0.0000</div>
+          <div class="hl">✨ 🆕 新增技能 cc-switch、lark-approval、lark-apps、lark-attendance、lark-base 等 32 个</div><div class="hl">✨ ✏️ 更新技能 messaging-push-setup、github-auth、github-repo-management、hermes-agent-skill-authoring</div><div class="hl">✨ 🧠 记忆新增 4 条</div><div class="hl">✨ 🧹 记忆清理 1 条</div><div class="hl">✨ 💬 完成 2 次会话，共 174 条消息、88 次工具调用</div><div class="hl">✨ ⚙️ 运行 2 个定时自动化任务</div>
+          <div class="ev-tags"><span class="ev-tag add">🆕 cc-switch</span><span class="ev-tag add">🆕 lark-approval</span><span class="ev-tag add">🆕 lark-apps</span><span class="ev-tag add">🆕 lark-attendance</span><span class="ev-tag add">🆕 lark-base</span><span class="ev-tag add">🆕 lark-calendar</span><span class="ev-tag add">🆕 lark-contact</span><span class="ev-tag add">🆕 lark-doc</span><span class="ev-tag add">🆕 lark-drive</span><span class="ev-tag add">🆕 lark-event</span><span class="ev-tag add">🆕 lark-im</span><span class="ev-tag add">🆕 lark-mail</span><span class="ev-tag add">🆕 lark-markdown</span><span class="ev-tag add">🆕 lark-minutes</span><span class="ev-tag add">🆕 lark-note</span><span class="ev-tag add">🆕 lark-okr</span><span class="ev-tag add">🆕 lark-openapi-explorer</span><span class="ev-tag add">🆕 lark-shared</span><span class="ev-tag add">🆕 lark-sheets</span><span class="ev-tag add">🆕 lark-skill-maker</span><span class="ev-tag add">🆕 lark-slides</span><span class="ev-tag add">🆕 lark-task</span><span class="ev-tag add">🆕 lark-vc</span><span class="ev-tag add">🆕 lark-vc-agent</span><span class="ev-tag add">🆕 lark-whiteboard</span><span class="ev-tag add">🆕 lark-wiki</span><span class="ev-tag add">🆕 lark-workflow-meeting-summary</span><span class="ev-tag add">🆕 lark-workflow-standup-report</span><span class="ev-tag add">🆕 feishu-wechat-archive</span><span class="ev-tag add">🆕 feishu-workspace-automation</span><span class="ev-tag add">🆕 grounded-citations</span><span class="ev-tag add">🆕 trend-intelligence-pipelines</span><span class="ev-tag update">✏️ messaging-push-setup</span><span class="ev-tag update">✏️ GitHub 认证</span><span class="ev-tag update">✏️ 仓库管理</span><span class="ev-tag update">✏️ 技能编写规范</span><span class="ev-tag memory">🧠 记忆 +4</span><span class="ev-tag memory">🧹 记忆 -1</span><span class="ev-tag session">💬 2 次会话</span><span class="ev-tag cron">⚙️ 2 个任务</span></div>
+        </div>
+      </div>
+      <div class="tl-day baseline">
+        <div class="tl-date">2026-08-03 </div>
+        <div class="timeline-content">
+          <div class="timeline-title">进化基线 · 起点</div>
+          <div class="timeline-desc">3 次会话 · 642 条消息 · 294 次工具调用 · 523375.6k tokens · $0.2902</div>
+          <div class="hl">✨ 🆕 新增技能 apple-notes、apple-reminders、findmy、imessage、claude-code 等 79 个</div><div class="hl">✨ 🧠 记忆新增 4 条</div><div class="hl">✨ 💬 完成 3 次会话，共 642 条消息、294 次工具调用</div><div class="hl">✨ ⚙️ 运行 2 个定时自动化任务</div>
+          <div class="ev-tags"><span class="ev-tag add">🆕 苹果备忘录</span><span class="ev-tag add">🆕 苹果提醒事项</span><span class="ev-tag add">🆕 查找设备</span><span class="ev-tag add">🆕 iMessage 短信</span><span class="ev-tag add">🆕 Claude Code 编程</span><span class="ev-tag add">🆕 Codex 编程</span><span class="ev-tag add">🆕 电脑操作</span><span class="ev-tag add">🆕 进化记录</span><span class="ev-tag add">🆕 Hermes 使用指南</span><span class="ev-tag add">🆕 hermes-auxiliary-config</span><span class="ev-tag add">🆕 组件安装</span><span class="ev-tag add">🆕 hermes-cron-watchdogs</span><span class="ev-tag add">🆕 hermes-messaging-setup</span><span class="ev-tag add">🆕 messaging-push-setup</span><span class="ev-tag add">🆕 OpenCode 编程</span><span class="ev-tag add">🆕 架构图</span><span class="ev-tag add">🆕 ASCII 艺术</span><span class="ev-tag add">🆕 ASCII 视频</span><span class="ev-tag add">🆕 信息图</span><span class="ev-tag add">🆕 网页设计</span><span class="ev-tag add">🆕 ComfyUI 生成</span><span class="ev-tag add">🆕 DESIGN.md 规范</span><span class="ev-tag add">🆕 Excalidraw 图表</span><span class="ev-tag add">🆕 人性化改写</span><span class="ev-tag add">🆕 Manim 动画</span><span class="ev-tag add">🆕 p5.js 创意编程</span><span class="ev-tag add">🆕 经典设计系统</span><span class="ev-tag add">🆕 文字排版实验</span><span class="ev-tag add">🆕 快速原型</span><span class="ev-tag add">🆕 词曲创作</span><span class="ev-tag add">🆕 TouchDesigner 控制</span><span class="ev-tag add">🆕 终端邮件</span><span class="ev-tag add">🆕 代码库体检</span><span class="ev-tag add">🆕 GitHub 认证</span><span class="ev-tag add">🆕 代码审查</span><span class="ev-tag add">🆕 Issue 管理</span><span class="ev-tag add">🆕 PR 流程</span><span class="ev-tag add">🆕 仓库管理</span><span class="ev-tag add">🆕 GIF 搜索</span><span class="ev-tag add">🆕 音频可视化</span><span class="ev-tag add">🆕 YouTube 内容</span><span class="ev-tag add">🆕 模型评测</span><span class="ev-tag add">🆕 W&amp;B 实验追踪</span><span class="ev-tag add">🆕 HuggingFace 仓库</span><span class="ev-tag add">🆕 本地推理</span><span class="ev-tag add">🆕 vLLM 推理服务</span><span class="ev-tag add">🆕 Obsidian 笔记</span><span class="ev-tag add">🆕 memory-config</span><span class="ev-tag add">🆕 memory-recall</span><span class="ev-tag add">🆕 memory-to-skill</span><span class="ev-tag add">🆕 Airtable 表格</span><span class="ev-tag add">🆕 Word 文档</span><span class="ev-tag add">🆕 Google 套件</span><span class="ev-tag add">🆕 地图服务</span><span class="ev-tag add">🆕 PDF 智能编辑</span><span class="ev-tag add">🆕 Notion 笔记</span><span class="ev-tag add">🆕 OCR 文档提取</span><span class="ev-tag add">🆕 PDF 处理</span><span class="ev-tag add">🆕 PPT 制作</span><span class="ev-tag add">🆕 Teams 会议管线</span><span class="ev-tag add">🆕 Excel 表格</span><span class="ev-tag add">🆕 论文搜索</span><span class="ev-tag add">🆕 博客监控</span><span class="ev-tag add">🆕 LLM 知识库</span><span class="ev-tag add">🆕 预测市场</span><span class="ev-tag add">🆕 论文写作</span><span class="ev-tag add">🆕 智能灯光</span><span class="ev-tag add">🆕 X 社交</span><span class="ev-tag add">🆕 应用探测</span><span class="ev-tag add">🆕 技能编写规范</span><span class="ev-tag add">🆕 桌面 DOM 检查</span><span class="ev-tag add">🆕 Node 调试</span><span class="ev-tag add">🆕 计划写作</span><span class="ev-tag add">🆕 Python 调试</span><span class="ev-tag add">🆕 提交前审查</span><span class="ev-tag add">🆕 代码简化</span><span class="ev-tag add">🆕 技术验证</span><span class="ev-tag add">🆕 系统化调试</span><span class="ev-tag add">🆕 测试驱动开发</span><span class="ev-tag memory">🧠 记忆 +4</span><span class="ev-tag session">💬 3 次会话</span><span class="ev-tag cron">⚙️ 2 个任务</span></div>
+        </div>
+      </div></div>
+</div>
+
+<div class="section">
+  <h2 class="section-title"><span>🛠️</span> 已掌握的 Skills<span class="tag">111 个技能</span></h2>
+  <div class="chips" id="chips"><span class="chip on" data-cat="all">全部</span><span class="chip" data-cat="apple">苹果生态 (4)</span><span class="chip" data-cat="autonomous-ai-agents">自主智能体 (12)</span><span class="chip" data-cat="creative">创意设计 (16)</span><span class="chip" data-cat="email">邮件 (1)</span><span class="chip" data-cat="github">GitHub (6)</span><span class="chip" data-cat="lark-approval">lark-approval (1)</span><span class="chip" data-cat="lark-apps">lark-apps (1)</span><span class="chip" data-cat="lark-attendance">lark-attendance (1)</span><span class="chip" data-cat="lark-base">lark-base (1)</span><span class="chip" data-cat="lark-calendar">lark-calendar (1)</span><span class="chip" data-cat="lark-contact">lark-contact (1)</span><span class="chip" data-cat="lark-doc">lark-doc (1)</span><span class="chip" data-cat="lark-drive">lark-drive (1)</span><span class="chip" data-cat="lark-event">lark-event (1)</span><span class="chip" data-cat="lark-im">lark-im (1)</span><span class="chip" data-cat="lark-mail">lark-mail (1)</span><span class="chip" data-cat="lark-markdown">lark-markdown (1)</span><span class="chip" data-cat="lark-minutes">lark-minutes (1)</span><span class="chip" data-cat="lark-note">lark-note (1)</span><span class="chip" data-cat="lark-okr">lark-okr (1)</span><span class="chip" data-cat="lark-openapi-explorer">lark-openapi-explorer (1)</span><span class="chip" data-cat="lark-shared">lark-shared (1)</span><span class="chip" data-cat="lark-sheets">lark-sheets (1)</span><span class="chip" data-cat="lark-skill-maker">lark-skill-maker (1)</span><span class="chip" data-cat="lark-slides">lark-slides (1)</span><span class="chip" data-cat="lark-task">lark-task (1)</span><span class="chip" data-cat="lark-vc">lark-vc (1)</span><span class="chip" data-cat="lark-vc-agent">lark-vc-agent (1)</span><span class="chip" data-cat="lark-whiteboard">lark-whiteboard (1)</span><span class="chip" data-cat="lark-wiki">lark-wiki (1)</span><span class="chip" data-cat="lark-workflow-meeting-summary">lark-workflow-meeting-summary (1)</span><span class="chip" data-cat="lark-workflow-standup-report">lark-workflow-standup-report (1)</span><span class="chip" data-cat="media">媒体 (3)</span><span class="chip" data-cat="mlops">MLOps (5)</span><span class="chip" data-cat="note-taking">笔记 (1)</span><span class="chip" data-cat="openclaw-imports">openclaw-imports (3)</span><span class="chip" data-cat="productivity">效率工具 (13)</span><span class="chip" data-cat="research">研究 (7)</span><span class="chip" data-cat="smart-home">智能家居 (1)</span><span class="chip" data-cat="social-media">社交媒体 (1)</span><span class="chip" data-cat="software-development">软件开发 (11)</span></div>
+  <div class="skills-grid">
+        <div class="skill-card" data-cat="apple">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="apple-notes">苹果备忘录</div>
+              <div class="skill-name-en">apple-notes</div>
+            </div>
+            <span class="skill-category" title="apple">苹果生态/apple-notes</span>
+          </div>
+          <div class="skill-description">通过 memo CLI 管理苹果备忘录：创建、搜索、编辑。</div>
+          <div class="skill-tags"><span class="skill-tag">Notes</span><span class="skill-tag">Apple</span><span class="skill-tag">macOS</span><span class="skill-tag">note-taking</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="apple">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="apple-reminders">苹果提醒事项</div>
+              <div class="skill-name-en">apple-reminders</div>
+            </div>
+            <span class="skill-category" title="apple">苹果生态/apple-reminders</span>
+          </div>
+          <div class="skill-description">通过 remindctl 管理苹果提醒事项：添加、列出、完成。</div>
+          <div class="skill-tags"><span class="skill-tag">Reminders</span><span class="skill-tag">tasks</span><span class="skill-tag">todo</span><span class="skill-tag">macOS</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="apple">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="findmy">查找设备</div>
+              <div class="skill-name-en">findmy</div>
+            </div>
+            <span class="skill-category" title="apple">苹果生态/findmy</span>
+          </div>
+          <div class="skill-description">在 macOS 上通过 FindMy 应用追踪苹果设备与 AirTag。</div>
+          <div class="skill-tags"><span class="skill-tag">FindMy</span><span class="skill-tag">AirTag</span><span class="skill-tag">location</span><span class="skill-tag">tracking</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="apple">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="imessage">iMessage 短信</div>
+              <div class="skill-name-en">imessage</div>
+            </div>
+            <span class="skill-category" title="apple">苹果生态/imessage</span>
+          </div>
+          <div class="skill-description">在 macOS 上通过 imsg CLI 收发 iMessage 与手机短信。</div>
+          <div class="skill-tags"><span class="skill-tag">iMessage</span><span class="skill-tag">SMS</span><span class="skill-tag">messaging</span><span class="skill-tag">macOS</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="autonomous-ai-agents">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="cc-switch">cc-switch</div>
+              
+            </div>
+            <span class="skill-category" title="autonomous-ai-agents">自主智能体/cc-switch</span>
+          </div>
+          <div class="skill-description">Admin CC Switch provider DB, esp. hermes-managed/locked.</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"><span class="agent">AGENT 创建</span><span>🌱 2026-08-04</span><span style="color:#f5c95c">✏️ 2026-08-04</span></div>
+        </div>
+        <div class="skill-card" data-cat="autonomous-ai-agents">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="claude-code">Claude Code 编程</div>
+              <div class="skill-name-en">claude-code</div>
+            </div>
+            <span class="skill-category" title="autonomous-ai-agents">自主智能体/claude-code</span>
+          </div>
+          <div class="skill-description">将编码任务委派给 Claude Code CLI（功能开发、PR）。</div>
+          <div class="skill-tags"><span class="skill-tag">Coding-Agent</span><span class="skill-tag">Claude</span><span class="skill-tag">Anthropic</span><span class="skill-tag">Code-Review</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="autonomous-ai-agents">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="codex">Codex 编程</div>
+              <div class="skill-name-en">codex</div>
+            </div>
+            <span class="skill-category" title="autonomous-ai-agents">自主智能体/codex</span>
+          </div>
+          <div class="skill-description">将编码任务委派给 OpenAI Codex CLI（功能开发、PR）。</div>
+          <div class="skill-tags"><span class="skill-tag">Coding-Agent</span><span class="skill-tag">Codex</span><span class="skill-tag">OpenAI</span><span class="skill-tag">Code-Review</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="autonomous-ai-agents">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="computer-use">电脑操作</div>
+              <div class="skill-name-en">computer-use</div>
+            </div>
+            <span class="skill-category" title="autonomous-ai-agents">自主智能体/computer-use</span>
+          </div>
+          <div class="skill-description">后台驱动桌面：点击、输入、滚动、拖拽，不抢占光标。</div>
+          <div class="skill-tags"><span class="skill-tag">computer-use</span><span class="skill-tag">desktop</span><span class="skill-tag">automation</span><span class="skill-tag">gui</span></div>
+          <div class="skill-created"><span>🌱 2026-08-03</span><span>⚡ 2026-08-04</span></div>
+        </div>
+        <div class="skill-card" data-cat="autonomous-ai-agents">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="evolution-tracking">进化记录</div>
+              <div class="skill-name-en">evolution-tracking</div>
+            </div>
+            <span class="skill-category" title="autonomous-ai-agents">自主智能体/evolution-tracking</span>
+          </div>
+          <div class="skill-description">追踪智能体进化：技能、记忆、会话可视化仪表盘。</div>
+          <div class="skill-tags"><span class="skill-tag">hermes</span><span class="skill-tag">evolution</span><span class="skill-tag">dashboard</span><span class="skill-tag">report</span></div>
+          <div class="skill-created"><span class="agent">AGENT 创建</span><span>🌱 2026-08-03</span><span style="color:#f5c95c">✏️ 2026-08-03</span><span>⚡ 2026-08-04</span></div>
+        </div>
+        <div class="skill-card" data-cat="autonomous-ai-agents">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="hermes-agent">Hermes 使用指南</div>
+              <div class="skill-name-en">hermes-agent</div>
+            </div>
+            <span class="skill-category" title="autonomous-ai-agents">自主智能体/hermes-agent</span>
+          </div>
+          <div class="skill-description">使用、配置、美化、扩展与编排 Hermes Agent。</div>
+          <div class="skill-tags"><span class="skill-tag">hermes</span><span class="skill-tag">setup</span><span class="skill-tag">configuration</span><span class="skill-tag">multi-agent</span></div>
+          <div class="skill-created"><span>🌱 2026-08-03</span><span>⚡ 2026-08-04</span></div>
+        </div>
+        <div class="skill-card" data-cat="autonomous-ai-agents">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="hermes-auxiliary-config">hermes-auxiliary-config</div>
+              
+            </div>
+            <span class="skill-category" title="autonomous-ai-agents">自主智能体/hermes-auxiliary-config</span>
+          </div>
+          <div class="skill-description">Programmatic Hermes auxiliary provider config (vision, TTS).</div>
+          <div class="skill-tags"><span class="skill-tag">hermes</span><span class="skill-tag">setup</span><span class="skill-tag">configuration</span><span class="skill-tag">auxiliary</span></div>
+          <div class="skill-created"><span class="agent">AGENT 创建</span><span>🌱 2026-08-03</span><span style="color:#f5c95c">✏️ 2026-08-03</span></div>
+        </div>
+        <div class="skill-card" data-cat="autonomous-ai-agents">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="hermes-component-install">组件安装</div>
+              <div class="skill-name-en">hermes-component-install</div>
+            </div>
+            <span class="skill-category" title="autonomous-ai-agents">自主智能体/hermes-component-install</span>
+          </div>
+          <div class="skill-description">安装与验证 Hermes 组件（cua-driver、浏览器等）。</div>
+          <div class="skill-tags"><span class="skill-tag">hermes</span><span class="skill-tag">setup</span><span class="skill-tag">install</span><span class="skill-tag">cua-driver</span></div>
+          <div class="skill-created"><span class="agent">AGENT 创建</span><span>🌱 2026-08-03</span><span>⚡ 2026-08-03</span></div>
+        </div>
+        <div class="skill-card" data-cat="autonomous-ai-agents">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="hermes-cron-watchdogs">hermes-cron-watchdogs</div>
+              
+            </div>
+            <span class="skill-category" title="autonomous-ai-agents">自主智能体/hermes-cron-watchdogs</span>
+          </div>
+          <div class="skill-description">Silent cron watchdogs: push only when there&#x27;s something new.</div>
+          <div class="skill-tags"><span class="skill-tag">cron</span><span class="skill-tag">watchdog</span><span class="skill-tag">automation</span><span class="skill-tag">notifications</span></div>
+          <div class="skill-created"><span class="agent">AGENT 创建</span><span>🌱 2026-08-03</span><span style="color:#f5c95c">✏️ 2026-08-03</span><span>⚡ 2026-08-04</span></div>
+        </div>
+        <div class="skill-card" data-cat="autonomous-ai-agents">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="hermes-messaging-setup">hermes-messaging-setup</div>
+              
+            </div>
+            <span class="skill-category" title="autonomous-ai-agents">自主智能体/hermes-messaging-setup</span>
+          </div>
+          <div class="skill-description">Weixin/Telegram push: gateway chat + cron delivery setup.</div>
+          <div class="skill-tags"><span class="skill-tag">hermes</span><span class="skill-tag">weixin</span><span class="skill-tag">wechat</span><span class="skill-tag">telegram</span></div>
+          <div class="skill-created"><span class="agent">AGENT 创建</span><span>🌱 2026-08-03</span><span style="color:#f5c95c">✏️ 2026-08-03</span><span>⚡ 2026-08-04</span></div>
+        </div>
+        <div class="skill-card" data-cat="autonomous-ai-agents">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="messaging-push-setup">messaging-push-setup</div>
+              
+            </div>
+            <span class="skill-category" title="autonomous-ai-agents">自主智能体/messaging-push-setup</span>
+          </div>
+          <div class="skill-description">Set up WeChat, Feishu/Lark CLI, Telegram pushes and gateways.</div>
+          <div class="skill-tags"><span class="skill-tag">messaging</span><span class="skill-tag">weixin</span><span class="skill-tag">wechat</span><span class="skill-tag">ilink</span></div>
+          <div class="skill-created"><span class="agent">AGENT 创建</span><span>🌱 2026-08-03</span><span style="color:#f5c95c">✏️ 2026-08-04</span><span>⚡ 2026-08-04</span></div>
+        </div>
+        <div class="skill-card" data-cat="autonomous-ai-agents">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="opencode">OpenCode 编程</div>
+              <div class="skill-name-en">opencode</div>
+            </div>
+            <span class="skill-category" title="autonomous-ai-agents">自主智能体/opencode</span>
+          </div>
+          <div class="skill-description">将编码任务委派给 OpenCode CLI（功能开发、PR 审查）。</div>
+          <div class="skill-tags"><span class="skill-tag">Coding-Agent</span><span class="skill-tag">OpenCode</span><span class="skill-tag">Autonomous</span><span class="skill-tag">Refactoring</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="creative">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="architecture-diagram">架构图</div>
+              <div class="skill-name-en">architecture-diagram</div>
+            </div>
+            <span class="skill-category" title="creative">创意设计/architecture-diagram</span>
+          </div>
+          <div class="skill-description">深色主题的 SVG 架构/云/基础设施图，输出为 HTML。</div>
+          <div class="skill-tags"><span class="skill-tag">architecture</span><span class="skill-tag">diagrams</span><span class="skill-tag">SVG</span><span class="skill-tag">HTML</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="creative">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="ascii-art">ASCII 艺术</div>
+              <div class="skill-name-en">ascii-art</div>
+            </div>
+            <span class="skill-category" title="creative">创意设计/ascii-art</span>
+          </div>
+          <div class="skill-description">ASCII 艺术：pyfiglet、cowsay、boxes、图片转 ASCII。</div>
+          <div class="skill-tags"><span class="skill-tag">ASCII</span><span class="skill-tag">Art</span><span class="skill-tag">Banners</span><span class="skill-tag">Creative</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="creative">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="ascii-video">ASCII 视频</div>
+              <div class="skill-name-en">ascii-video</div>
+            </div>
+            <span class="skill-category" title="creative">创意设计/ascii-video</span>
+          </div>
+          <div class="skill-description">将视频/音频转换为彩色 ASCII 动画 MP4/GIF。</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="creative">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="baoyu-infographic">信息图</div>
+              <div class="skill-name-en">baoyu-infographic</div>
+            </div>
+            <span class="skill-category" title="creative">创意设计/baoyu-infographic</span>
+          </div>
+          <div class="skill-description">信息图制作：21 种布局 × 21 种风格（信息图、可视化）。</div>
+          <div class="skill-tags"><span class="skill-tag">infographic</span><span class="skill-tag">visual-summary</span><span class="skill-tag">creative</span><span class="skill-tag">image-generation</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="creative">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="claude-design">网页设计</div>
+              <div class="skill-name-en">claude-design</div>
+            </div>
+            <span class="skill-category" title="creative">创意设计/claude-design</span>
+          </div>
+          <div class="skill-description">设计一次性 HTML 作品（落地页、演示稿、原型）。</div>
+          <div class="skill-tags"><span class="skill-tag">design</span><span class="skill-tag">html</span><span class="skill-tag">prototype</span><span class="skill-tag">ux</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="creative">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="comfyui">ComfyUI 生成</div>
+              <div class="skill-name-en">comfyui</div>
+            </div>
+            <span class="skill-category" title="creative">创意设计/comfyui</span>
+          </div>
+          <div class="skill-description">通过扩散模型工作流生成图像、视频与音频。</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="creative">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="design-md">DESIGN.md 规范</div>
+              <div class="skill-name-en">design-md</div>
+            </div>
+            <span class="skill-category" title="creative">创意设计/design-md</span>
+          </div>
+          <div class="skill-description">编写/校验/导出 Google DESIGN.md 令牌规范文件。</div>
+          <div class="skill-tags"><span class="skill-tag">design</span><span class="skill-tag">design-system</span><span class="skill-tag">tokens</span><span class="skill-tag">ui</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="creative">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="excalidraw">Excalidraw 图表</div>
+              <div class="skill-name-en">excalidraw</div>
+            </div>
+            <span class="skill-category" title="creative">创意设计/excalidraw</span>
+          </div>
+          <div class="skill-description">手绘风 Excalidraw JSON 图表（架构、流程、时序）。</div>
+          <div class="skill-tags"><span class="skill-tag">Excalidraw</span><span class="skill-tag">Diagrams</span><span class="skill-tag">Flowcharts</span><span class="skill-tag">Architecture</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="creative">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="humanizer">人性化改写</div>
+              <div class="skill-name-en">humanizer</div>
+            </div>
+            <span class="skill-category" title="creative">创意设计/humanizer</span>
+          </div>
+          <div class="skill-description">让文本更自然：去除 AI 腔调，注入真实语气。</div>
+          <div class="skill-tags"><span class="skill-tag">writing</span><span class="skill-tag">editing</span><span class="skill-tag">humanize</span><span class="skill-tag">anti-ai-slop</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="creative">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="manim-video">Manim 动画</div>
+              <div class="skill-name-en">manim-video</div>
+            </div>
+            <span class="skill-category" title="creative">创意设计/manim-video</span>
+          </div>
+          <div class="skill-description">Manim CE 动画：3Blue1Brown 风格数学/算法视频。</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="creative">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="p5js">p5.js 创意编程</div>
+              <div class="skill-name-en">p5js</div>
+            </div>
+            <span class="skill-category" title="creative">创意设计/p5js</span>
+          </div>
+          <div class="skill-description">p5.js 草图：生成艺术、着色器、交互、3D。</div>
+          <div class="skill-tags"><span class="skill-tag">creative-coding</span><span class="skill-tag">generative-art</span><span class="skill-tag">p5js</span><span class="skill-tag">canvas</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="creative">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="popular-web-designs">经典设计系统</div>
+              <div class="skill-name-en">popular-web-designs</div>
+            </div>
+            <span class="skill-category" title="creative">创意设计/popular-web-designs</span>
+          </div>
+          <div class="skill-description">54 个真实设计系统（Stripe、Linear、Vercel）的 HTML/CSS 复刻。</div>
+          <div class="skill-tags"><span class="skill-tag">design</span><span class="skill-tag">css</span><span class="skill-tag">html</span><span class="skill-tag">ui</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="creative">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="pretext">文字排版实验</div>
+              <div class="skill-name-en">pretext</div>
+            </div>
+            <span class="skill-category" title="creative">创意设计/pretext</span>
+          </div>
+          <div class="skill-description">用无 DOM 的文本排版构建创意浏览器演示。</div>
+          <div class="skill-tags"><span class="skill-tag">creative-coding</span><span class="skill-tag">typography</span><span class="skill-tag">pretext</span><span class="skill-tag">ascii-art</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="creative">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="sketch">快速原型</div>
+              <div class="skill-name-en">sketch</div>
+            </div>
+            <span class="skill-category" title="creative">创意设计/sketch</span>
+          </div>
+          <div class="skill-description">一次性 HTML 线框稿：2-3 个设计变体对比。</div>
+          <div class="skill-tags"><span class="skill-tag">sketch</span><span class="skill-tag">mockup</span><span class="skill-tag">design</span><span class="skill-tag">ui</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="creative">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="songwriting-and-ai-music">词曲创作</div>
+              <div class="skill-name-en">songwriting-and-ai-music</div>
+            </div>
+            <span class="skill-category" title="creative">创意设计/songwriting-and-ai-music</span>
+          </div>
+          <div class="skill-description">作词作曲技巧与 Suno AI 音乐提示词。</div>
+          <div class="skill-tags"><span class="skill-tag">songwriting</span><span class="skill-tag">music</span><span class="skill-tag">suno</span><span class="skill-tag">parody</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="creative">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="touchdesigner-mcp">TouchDesigner 控制</div>
+              <div class="skill-name-en">touchdesigner-mcp</div>
+            </div>
+            <span class="skill-category" title="creative">创意设计/touchdesigner-mcp</span>
+          </div>
+          <div class="skill-description">通过 twozero MCP 控制 TouchDesigner。</div>
+          <div class="skill-tags"><span class="skill-tag">TouchDesigner</span><span class="skill-tag">MCP</span><span class="skill-tag">twozero</span><span class="skill-tag">creative-coding</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="email">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="himalaya">终端邮件</div>
+              <div class="skill-name-en">himalaya</div>
+            </div>
+            <span class="skill-category" title="email">邮件/himalaya</span>
+          </div>
+          <div class="skill-description">Himalaya CLI：在终端收发管理 IMAP/SMTP 邮件。</div>
+          <div class="skill-tags"><span class="skill-tag">Email</span><span class="skill-tag">IMAP</span><span class="skill-tag">SMTP</span><span class="skill-tag">CLI</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="github">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="codebase-inspection">代码库体检</div>
+              <div class="skill-name-en">codebase-inspection</div>
+            </div>
+            <span class="skill-category" title="github">GitHub/codebase-inspection</span>
+          </div>
+          <div class="skill-description">用 pygount 检查代码库：代码行数、语言、占比。</div>
+          <div class="skill-tags"><span class="skill-tag">LOC</span><span class="skill-tag">Code Analysis</span><span class="skill-tag">pygount</span><span class="skill-tag">Codebase</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="github">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="github-auth">GitHub 认证</div>
+              <div class="skill-name-en">github-auth</div>
+            </div>
+            <span class="skill-category" title="github">GitHub/github-auth</span>
+          </div>
+          <div class="skill-description">GitHub 认证配置：HTTPS 令牌、SSH 密钥、gh CLI 登录。</div>
+          <div class="skill-tags"><span class="skill-tag">GitHub</span><span class="skill-tag">Authentication</span><span class="skill-tag">Git</span><span class="skill-tag">gh-cli</span></div>
+          <div class="skill-created"><span>🌱 2026-08-04</span><span>⚡ 2026-08-04</span></div>
+        </div>
+        <div class="skill-card" data-cat="github">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="github-code-review">代码审查</div>
+              <div class="skill-name-en">github-code-review</div>
+            </div>
+            <span class="skill-category" title="github">GitHub/github-code-review</span>
+          </div>
+          <div class="skill-description">审查 PR：diff 分析、行内评论（gh CLI 或 REST）。</div>
+          <div class="skill-tags"><span class="skill-tag">GitHub</span><span class="skill-tag">Code-Review</span><span class="skill-tag">Pull-Requests</span><span class="skill-tag">Git</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="github">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="github-issues">Issue 管理</div>
+              <div class="skill-name-en">github-issues</div>
+            </div>
+            <span class="skill-category" title="github">GitHub/github-issues</span>
+          </div>
+          <div class="skill-description">创建、分类、打标签、指派 GitHub Issue（gh 或 REST）。</div>
+          <div class="skill-tags"><span class="skill-tag">GitHub</span><span class="skill-tag">Issues</span><span class="skill-tag">Project-Management</span><span class="skill-tag">Bug-Tracking</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="github">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="github-pr-workflow">PR 流程</div>
+              <div class="skill-name-en">github-pr-workflow</div>
+            </div>
+            <span class="skill-category" title="github">GitHub/github-pr-workflow</span>
+          </div>
+          <div class="skill-description">GitHub PR 全生命周期：分支、提交、开启、CI、合并。</div>
+          <div class="skill-tags"><span class="skill-tag">GitHub</span><span class="skill-tag">Pull-Requests</span><span class="skill-tag">CI/CD</span><span class="skill-tag">Git</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="github">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="github-repo-management">仓库管理</div>
+              <div class="skill-name-en">github-repo-management</div>
+            </div>
+            <span class="skill-category" title="github">GitHub/github-repo-management</span>
+          </div>
+          <div class="skill-description">克隆/创建/复刻仓库，管理远程与发布版本。</div>
+          <div class="skill-tags"><span class="skill-tag">GitHub</span><span class="skill-tag">Repositories</span><span class="skill-tag">Git</span><span class="skill-tag">Releases</span></div>
+          <div class="skill-created"><span>🌱 2026-08-04</span><span>⚡ 2026-08-04</span></div>
+        </div>
+        <div class="skill-card" data-cat="lark-approval">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="lark-approval">lark-approval</div>
+              
+            </div>
+            <span class="skill-category" title="lark-approval">lark-approval</span>
+          </div>
+          <div class="skill-description">飞书审批：查询和处理审批待办/已办/实例，搜索可发起审批定义、查看定义详情并发起原生审批实例。当用户要处理审批任务、查看审批实例、搜索或发起审批时使用。审批待办不是飞书任务；非审批类待办走 lark-task。不负责创建审批定义；三方审批定义不走原生提单。</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="lark-apps">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="lark-apps">lark-apps</div>
+              
+            </div>
+            <span class="skill-category" title="lark-apps">lark-apps</span>
+          </div>
+          <div class="skill-description">妙搭（Spark/Miaoda）应用开发与托管：应用创建、本地全栈开发、云端生成迭代、创意设计（UI mockup / 可交互原型 / 线框图 / 落地页 / 仪表盘 / 幻灯片 deck / 视觉探索）、AI相关能力和飞书平台能力或者其他外部能力集成、日志/Trace/监控指标/PV/UV 查询、环境变量管理、应用角色与成员管理、自动化触发器（定时/记录变更/Webhook/飞书审批）。当用户要开发/新建一个系统·工具·平台·应用，或要本地开发 / 云端开发 / 修改 / 部署 / 发布 / 上线 / 拿可分享链接，或用 HTML 做页面·网站·部署到妙搭，或要设计 / design / mockup / prototype / wireframe / 做 PPT / deck / 视觉探索，或提到妙搭/Spark/Miaoda（应用运行时域名形如 *.aiforce.cloud）、应用数据库、应用文件存储、开放 API Key、可见范围、应用角色/角色成员、线上日志、接口请求量、错误量、延迟、访问量、环境变量、给妙搭应用配自动化任务/定时触发/审批通过后自动触发时使用。不负责普通云盘文件上传（lark-drive）、飞书文档编辑（lark-doc）、原生幻灯片创建（lark-slides）。</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="lark-attendance">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="lark-attendance">lark-attendance</div>
+              
+            </div>
+            <span class="skill-category" title="lark-attendance">lark-attendance</span>
+          </div>
+          <div class="skill-description">飞书考勤打卡：查询自己的考勤打卡记录</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="lark-base">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="lark-base">lark-base</div>
+              
+            </div>
+            <span class="skill-category" title="lark-base">lark-base</span>
+          </div>
+          <div class="skill-description">飞书多维表格（Base）操作：建表、字段、记录、视图、统计、公式/lookup、表单、仪表盘、workflow、角色权限；遇到 Base/多维表格/bitable 或 /base/ 链接时使用。文件导入/导出转 lark-drive，认证/授权转 lark-shared。</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="lark-calendar">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="lark-calendar">lark-calendar</div>
+              
+            </div>
+            <span class="skill-category" title="lark-calendar">lark-calendar</span>
+          </div>
+          <div class="skill-description">飞书日历：管理日历日程和会议室。查看/搜索日程、创建/更新日程、管理参会人、查询忙闲和推荐时段、预定会议室。当用户需要查看日程安排、创建/修改会议、查询/预定会议室时使用。不负责：查询过去的视频会议记录（走 lark-vc）、待办任务（走 lark-task）。</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="lark-contact">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="lark-contact">lark-contact</div>
+              
+            </div>
+            <span class="skill-category" title="lark-contact">lark-contact</span>
+          </div>
+          <div class="skill-description">飞书 / Lark 通讯录:按姓名 / 邮箱解析成 open_id,或按 open_id 反查姓名 / 部门 / 邮箱 / 联系方式 / 个人状态 / 签名,以及按关键词搜索当前用户可见的机器人 / 智能体(agent)。当用户提到一个名字要下一步发消息 / 排日程,或拿到 open_id 想查具体信息时使用。不负责部门树遍历、按部门列员工、组织架构图,这类需求走原生 OpenAPI。</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="lark-doc">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="lark-doc">lark-doc</div>
+              
+            </div>
+            <span class="skill-category" title="lark-doc">lark-doc</span>
+          </div>
+          <div class="skill-description">飞书云文档（Docx / Wiki 文档）：读取和编辑飞书文档内容。当用户给出文档 URL 或 token，或需要查看、创建、编辑文档、插入或下载文档图片附件时使用。文档中嵌入的电子表格、多维表格、画板，先用本 skill 提取 token 再切到对应 skill。当用户给出 doubao.com 的 /docx/ 或 /wiki/ URL/token 时，也应直接使用本 skill；路由依据是 URL 路径模式和 token，而不是域名。不负责文档评论管理，也不负责表格或 Base 的数据操作。当用户明确要操作飞书思维笔记时，也使用本 skill。</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="lark-drive">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="lark-drive">lark-drive</div>
+              
+            </div>
+            <span class="skill-category" title="lark-drive">lark-drive</span>
+          </div>
+          <div class="skill-description">飞书云空间（云盘/云存储）：管理 Drive 文件和文件夹，包含上传/下载、创建文件夹、复制/移动/删除、查看元数据、查询权限设置、评论/权限/订阅、标题、版本、飞书文档密级标签（secure labels）和本地文件导入。用户需要整理云盘目录、处理云空间资源 URL/token、判断链接类型/真实 token/标题，或导入 Word/Markdown/Excel/CSV/PPTX/.base 为 docx/sheet/bitable/slides 时使用；doubao.com 云空间 URL/token 也按资源路径和 token 路由，不回退 WebFetch。不负责：文档内容编辑（走 lark-doc）、表格/Base 表内数据操作（走 lark-sheets/lark-base）、知识空间节点/成员管理（走 lark-wiki）、原生 Markdown 文件读写/patch/diff（走 lark-markdown）。</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="lark-event">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="lark-event">lark-event</div>
+              
+            </div>
+            <span class="skill-category" title="lark-event">lark-event</span>
+          </div>
+          <div class="skill-description">Lark/Feishu real-time event listening / subscribing / consuming: stream events as NDJSON via `lark-cli event consume &lt;EventKey&gt;` (covers IM messages/reactions/chat changes, Approval status changes, Task updates, VC meeting started/joined/ended, Minutes generated, Whiteboard updated, etc.). Use for Lark bots, real-time message processing, long-running subscribers, streaming webhook/push handlers. Supports `--max-events` / `--timeout` bounded runs and a stderr ready-marker contract — designed for AI agents running as subprocesses.</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="lark-im">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="lark-im">lark-im</div>
+              
+            </div>
+            <span class="skill-category" title="lark-im">lark-im</span>
+          </div>
+          <div class="skill-description">飞书即时通讯：收发消息和管理群聊。发送和回复消息、搜索聊天记录、管理群聊成员、上传下载图片和文件（支持大文件分片下载）、管理表情回复、发送应用内/短信/电话加急、发送和处理交互卡片（Interactive Card）、监听卡片按钮回调（card.action.trigger）。当用户需要发消息、查看或搜索聊天记录、下载聊天中的文件、查看群成员、搜索群、创建群聊或话题群、管理标记数据、管理 Feed 置顶（添加/移除/查询置顶会话）、管理标签数据、处理卡片回调时使用。</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="lark-mail">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="lark-mail">lark-mail</div>
+              
+            </div>
+            <span class="skill-category" title="lark-mail">lark-mail</span>
+          </div>
+          <div class="skill-description">飞书邮箱：Use when user mentions 起草邮件、写邮件、草稿、发送/回复/转发邮件、查阅邮件、看邮件、搜索邮件、邮件文件夹、邮件标签、邮件联系人、监听新邮件、邮件收信规则等；use for mail/email intent only. Do not use for docs/sheets/calendar/auth setup/pure contact lookup/IM chat tasks.</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="lark-markdown">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="lark-markdown">lark-markdown</div>
+              
+            </div>
+            <span class="skill-category" title="lark-markdown">lark-markdown</span>
+          </div>
+          <div class="skill-description">飞书 Markdown：查看、创建、上传、编辑和比较 Markdown 文件。当用户需要创建或编辑 Markdown 文件、读取、修改、局部 patch 或比较差异时使用。不负责将 Markdown 导入为飞书在线文档，也不负责文件搜索、权限、评论、移动、删除等云空间管理操作。</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="lark-minutes">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="lark-minutes">lark-minutes</div>
+              
+            </div>
+            <span class="skill-category" title="lark-minutes">lark-minutes</span>
+          </div>
+          <div class="skill-description">飞书妙记：搜索妙记、查看妙记基础信息、下载/上传音视频、读取或编辑妙记的产物内容、改标题、替换说话人/关键词、申请妙记查看/编辑权限。当给出minute_token、本地音视频文件，要查/改/转妙记产物，或用户明确要主动申请妙记权限时使用；本地音视频转纪要/逐字稿优先走本 skill，不要用 ffmpeg/whisper 本地转写。不负责：获取会议关联妙记，或仅按自然语言标题定位纪要</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="lark-note">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="lark-note">lark-note</div>
+              
+            </div>
+            <span class="skill-category" title="lark-note">lark-note</span>
+          </div>
+          <div class="skill-description">飞书会议纪要（Note）直查：已知 note_id 时查询纪要详情、展示类型、关联文档 token，并读取 unified 原始逐字记录。当用户已持有 note_id，或从文档显式 vc-node-id 获得 note_id 时使用。不负责会议/日程/妙记定位、文档标题搜索或 Docx 正文读取。</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="lark-okr">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="lark-okr">lark-okr</div>
+              
+            </div>
+            <span class="skill-category" title="lark-okr">lark-okr</span>
+          </div>
+          <div class="skill-description">飞书 OKR：管理目标与关键结果。查看和编辑 OKR 周期、目标、关键结果、对齐关系、量化指标和进展记录。当用户需要查看或创建 OKR、管理目标和关键结果、查看对齐关系时使用。不负责：待办任务管理（lark-task）、日程/会议安排（lark-calendar）、绩效评估</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="lark-openapi-explorer">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="lark-openapi-explorer">lark-openapi-explorer</div>
+              
+            </div>
+            <span class="skill-category" title="lark-openapi-explorer">lark-openapi-explorer</span>
+          </div>
+          <div class="skill-description">飞书/Lark 原生 OpenAPI 探索：从官方文档库中挖掘未经 CLI 封装的原生 OpenAPI 接口。当用户的需求无法被现有 lark-* skill 或 lark-cli 已注册命令满足，需要查找并调用原生飞书 OpenAPI 时使用。</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="lark-shared">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="lark-shared">lark-shared</div>
+              
+            </div>
+            <span class="skill-category" title="lark-shared">lark-shared</span>
+          </div>
+          <div class="skill-description">Use for lark-cli setup/auth tasks: auth login/status/logout, user vs bot identity, business-domain permissions (--domain, including all/docs/drive), missing scopes, revoking authorization, or handling _notice JSON.</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="lark-sheets">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="lark-sheets">lark-sheets</div>
+              
+            </div>
+            <span class="skill-category" title="lark-sheets">lark-sheets</span>
+          </div>
+          <div class="skill-description">飞书电子表格：创建和操作电子表格。支持创建表格、管理工作表与行列结构（增删/合并/调整尺寸/隐藏/冻结）、读写单元格（值/公式/样式/批注/单元格图片）、查找替换、多操作原子批量更新，以及图表、透视表、条件格式、筛选器、迷你图、浮动图片等对象的创建与维护。当用户需要创建电子表格、管理工作表、批量读写或编辑数据、统计汇总与可视化、表格美化、公式计算（含 Excel 公式迁移）、金融/财务建模（DCF、三张表、预算、Sensitivity 等）等任务时使用。若用户是想按名称或关键词搜索云空间（云盘/云存储）里的表格文件，请改用 lark-drive 的 drive +search 先定位资源。当用户给出 doubao.com 的 /sheets/ URL/token 时，也应直接使用本 skill，不要因为域名不是飞书而回退到 WebFetch；路由依据是 URL 路径模式和 token，而不是域名。</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="lark-skill-maker">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="lark-skill-maker">lark-skill-maker</div>
+              
+            </div>
+            <span class="skill-category" title="lark-skill-maker">lark-skill-maker</span>
+          </div>
+          <div class="skill-description">创建 lark-cli 的自定义 Skill。当用户需要把飞书 API 操作封装成可复用的 Skill（包装原子 API 或编排多步流程）时使用。</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="lark-slides">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="lark-slides">lark-slides</div>
+              
+            </div>
+            <span class="skill-category" title="lark-slides">lark-slides</span>
+          </div>
+          <div class="skill-description">飞书幻灯片：创建和编辑幻灯片。创建演示文稿、读取幻灯片内容、管理幻灯片页面（创建、删除、读取、局部替换）。当用户需要创建或编辑幻灯片、读取或修改单个页面时使用。当用户给出 doubao.com 的 /slides/ URL/token 时，也应直接使用本 skill，不要因为域名不是飞书而回退到 WebFetch；路由依据是 URL 路径模式和 token，而不是域名。不负责：云文档内容编辑（走 lark-doc）、云文档里的独立画板对象（走 lark-whiteboard）、上传或下载普通文件（走 lark-drive）。</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="lark-task">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="lark-task">lark-task</div>
+              
+            </div>
+            <span class="skill-category" title="lark-task">lark-task</span>
+          </div>
+          <div class="skill-description">飞书任务：管理任务、清单和任务智能体。创建待办任务、查看和更新任务状态、拆分子任务、组织任务清单、分配协作成员、上传任务附件、注册或注销任务智能体、更新任务智能体的主页数据、写入智能体任务记录。当用户需要创建待办事项、查看任务列表、跟踪任务进度、管理项目清单或给他人分配任务、为任务上传附件文件、注册注销任务智能体、更新智能体主页数据、写入任务记录时使用。</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="lark-vc">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="lark-vc">lark-vc</div>
+              
+            </div>
+            <span class="skill-category" title="lark-vc">lark-vc</span>
+          </div>
+          <div class="skill-description">飞书视频会议：搜索历史会议记录、查询会议纪要（总结/待办/章节/逐字稿）、查询参会人快照。当用户查询已结束的会议、获取会议产物（纪要/妙记）、查看参会人时使用；查询未来日程走 lark-calendar。不负责：Agent 真实入会/离会、会中实时事件（走 lark-vc-agent）。</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="lark-vc-agent">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="lark-vc-agent">lark-vc-agent</div>
+              
+            </div>
+            <span class="skill-category" title="lark-vc-agent">lark-vc-agent</span>
+          </div>
+          <div class="skill-description">飞书视频会议会中能力：用于让应用机器人真实加入或离开正在进行的会议，并读取当前身份可见的会中事件、发送会中文本消息或会中表情。适用于用户询问正在开的会议发生了什么、谁在发言、是否共享内容，或需要发现当前可读的进行中会议 ID。不负责已结束会议搜索、参会人快照、纪要、逐字稿或录制查询，这些使用 lark-vc 技能。</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="lark-whiteboard">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="lark-whiteboard">lark-whiteboard</div>
+              
+            </div>
+            <span class="skill-category" title="lark-whiteboard">lark-whiteboard</span>
+          </div>
+          <div class="skill-description">&gt;</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="lark-wiki">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="lark-wiki">lark-wiki</div>
+              
+            </div>
+            <span class="skill-category" title="lark-wiki">lark-wiki</span>
+          </div>
+          <div class="skill-description">飞书知识库：管理知识空间、空间成员和文档节点。创建和查询知识空间、查看和管理空间成员、管理节点层级结构、在知识库中组织文档和快捷方式。当用户需要在知识库中查找或创建文档、浏览知识空间结构、查看或管理空间成员、移动或复制节点时使用。当用户给出 doubao.com 的 /wiki/ URL/token 时，也应直接使用本 skill，不要因为域名不是飞书而回退到 WebFetch；路由依据是 URL 路径模式和 token，而不是域名。不负责：上传文件到知识库节点下（走 lark-drive）、编辑文档/表格/Base 内容（走 lark-doc / lark-sheets / lark-base）。</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="lark-workflow-meeting-summary">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="lark-workflow-meeting-summary">lark-workflow-meeting-summary</div>
+              
+            </div>
+            <span class="skill-category" title="lark-workflow-meeting-summary">lark-workflow-meeting-summary</span>
+          </div>
+          <div class="skill-description">会议纪要整理工作流：汇总指定时间范围内的会议纪要并生成结构化报告。当用户需要整理会议纪要、生成会议周报、回顾一段时间内的会议内容时使用。</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="lark-workflow-standup-report">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="lark-workflow-standup-report">lark-workflow-standup-report</div>
+              
+            </div>
+            <span class="skill-category" title="lark-workflow-standup-report">lark-workflow-standup-report</span>
+          </div>
+          <div class="skill-description">日程待办摘要：编排 calendar +agenda 和 task +get-my-tasks，生成指定日期的日程与未完成任务摘要。适用于了解今天/明天/本周的安排。</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="media">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="gif-search">GIF 搜索</div>
+              <div class="skill-name-en">gif-search</div>
+            </div>
+            <span class="skill-category" title="media">媒体/gif-search</span>
+          </div>
+          <div class="skill-description">通过 Tenor API 用 curl + jq 搜索/下载 GIF。</div>
+          <div class="skill-tags"><span class="skill-tag">GIF</span><span class="skill-tag">Media</span><span class="skill-tag">Search</span><span class="skill-tag">Tenor</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="media">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="songsee">音频可视化</div>
+              <div class="skill-name-en">songsee</div>
+            </div>
+            <span class="skill-category" title="media">媒体/songsee</span>
+          </div>
+          <div class="skill-description">音频频谱图与特征分析（mel、chroma、MFCC）CLI。</div>
+          <div class="skill-tags"><span class="skill-tag">Audio</span><span class="skill-tag">Visualization</span><span class="skill-tag">Spectrogram</span><span class="skill-tag">Music</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="media">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="youtube-content">YouTube 内容</div>
+              <div class="skill-name-en">youtube-content</div>
+            </div>
+            <span class="skill-category" title="media">媒体/youtube-content</span>
+          </div>
+          <div class="skill-description">将 YouTube 字幕转为摘要、推文、博客文章。</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="mlops">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="evaluating-llms-harness">模型评测</div>
+              <div class="skill-name-en">evaluating-llms-harness</div>
+            </div>
+            <span class="skill-category" title="mlops">MLOps/evaluation/evaluating-llms-harness</span>
+          </div>
+          <div class="skill-description">lm-eval-harness：基准评测 LLM（MMLU、GSM8K 等）。</div>
+          <div class="skill-tags"><span class="skill-tag">Evaluation</span><span class="skill-tag">LM Evaluation Harness</span><span class="skill-tag">Benchmarking</span><span class="skill-tag">MMLU</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="mlops">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="huggingface-hub">HuggingFace 仓库</div>
+              <div class="skill-name-en">huggingface-hub</div>
+            </div>
+            <span class="skill-category" title="mlops">MLOps/huggingface-hub</span>
+          </div>
+          <div class="skill-description">HuggingFace hf CLI：搜索/下载/上传模型与数据集。</div>
+          <div class="skill-tags"><span class="skill-tag">huggingface</span><span class="skill-tag">hf</span><span class="skill-tag">models</span><span class="skill-tag">datasets</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="mlops">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="llama-cpp">本地推理</div>
+              <div class="skill-name-en">llama-cpp</div>
+            </div>
+            <span class="skill-category" title="mlops">MLOps/inference/llama-cpp</span>
+          </div>
+          <div class="skill-description">llama.cpp 本地 GGUF 模型推理 + HuggingFace 模型发现。</div>
+          <div class="skill-tags"><span class="skill-tag">llama.cpp</span><span class="skill-tag">GGUF</span><span class="skill-tag">Quantization</span><span class="skill-tag">Hugging Face Hub</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="mlops">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="serving-llms-vllm">vLLM 推理服务</div>
+              <div class="skill-name-en">serving-llms-vllm</div>
+            </div>
+            <span class="skill-category" title="mlops">MLOps/inference/serving-llms-vllm</span>
+          </div>
+          <div class="skill-description">vLLM：高吞吐 LLM 服务、OpenAI 兼容 API、量化。</div>
+          <div class="skill-tags"><span class="skill-tag">vLLM</span><span class="skill-tag">Inference Serving</span><span class="skill-tag">PagedAttention</span><span class="skill-tag">Continuous Batching</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="mlops">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="weights-and-biases">W&amp;B 实验追踪</div>
+              <div class="skill-name-en">weights-and-biases</div>
+            </div>
+            <span class="skill-category" title="mlops">MLOps/evaluation/weights-and-biases</span>
+          </div>
+          <div class="skill-description">Weights &amp; Biases：记录 ML 实验、超参扫描、模型注册表。</div>
+          <div class="skill-tags"><span class="skill-tag">MLOps</span><span class="skill-tag">Weights And Biases</span><span class="skill-tag">WandB</span><span class="skill-tag">Experiment Tracking</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="note-taking">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="obsidian">Obsidian 笔记</div>
+              <div class="skill-name-en">obsidian</div>
+            </div>
+            <span class="skill-category" title="note-taking">笔记/obsidian</span>
+          </div>
+          <div class="skill-description">读取、搜索、创建、编辑 Obsidian 笔记库。</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="openclaw-imports">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="memory-config">memory-config</div>
+              
+            </div>
+            <span class="skill-category" title="openclaw-imports">openclaw-imports/memory-config</span>
+          </div>
+          <div class="skill-description">Diagnose and configure MemSearch memory behavior for the Codex plugin. Use when the user asks about MemSearch configuration, plugin summarization, PROJECT.md/USER.md maintenance, memory directories, index health, provider routing, prompt files, or migration/compatibility questions.</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="openclaw-imports">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="memory-recall">memory-recall</div>
+              
+            </div>
+            <span class="skill-category" title="openclaw-imports">openclaw-imports/memory-recall</span>
+          </div>
+          <div class="skill-description">Search and recall relevant memories from past sessions via memsearch. Use when the user&#x27;s question could benefit from historical context, past decisions, debugging notes, previous conversations, or project knowledge -- especially questions like &#x27;what did I decide about X&#x27;, &#x27;why did we do Y&#x27;, or &#x27;have I seen this before&#x27;. Also use when you see `[memsearch] Memory available` hints injected via SessionStart or UserPromptSubmit. Typical flow: search for 3-5 chunks, expand the most relevant, optionally deep-drill into original transcripts via the anchor format. Skip when the question is purely about current code state (use Read/Grep), ephemeral (today&#x27;s task only), or the user has explicitly asked to ignore memory.</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="openclaw-imports">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="memory-to-skill">memory-to-skill</div>
+              
+            </div>
+            <span class="skill-category" title="openclaw-imports">openclaw-imports/memory-to-skill</span>
+          </div>
+          <div class="skill-description">Turn workflows from your MemSearch memory into reusable skills. Use when the user asks to make/create/extract/distill a skill from what they just did or from past work, review skill candidates, install a distilled skill, or &#x27;turn this into a skill&#x27;. Manages MemSearch procedural-memory candidates under .memsearch/skill-candidates/, not Codex&#x27;s own skills system.</div>
+          <div class="skill-tags"></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="productivity">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="airtable">Airtable 表格</div>
+              <div class="skill-name-en">airtable</div>
+            </div>
+            <span class="skill-category" title="productivity">效率工具/airtable</span>
+          </div>
+          <div class="skill-description">Airtable REST API（curl）：记录增删改查、筛选、upsert。</div>
+          <div class="skill-tags"><span class="skill-tag">Airtable</span><span class="skill-tag">Productivity</span><span class="skill-tag">Database</span><span class="skill-tag">API</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="productivity">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="docx">Word 文档</div>
+              <div class="skill-name-en">docx</div>
+            </div>
+            <span class="skill-category" title="productivity">效率工具/docx</span>
+          </div>
+          <div class="skill-description">创建、读取、编辑 Word .docx 文档与模板。</div>
+          <div class="skill-tags"><span class="skill-tag">Word</span><span class="skill-tag">DOCX</span><span class="skill-tag">Documents</span><span class="skill-tag">Office</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="productivity">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="feishu-wechat-archive">feishu-wechat-archive</div>
+              
+            </div>
+            <span class="skill-category" title="productivity">效率工具/feishu-wechat-archive</span>
+          </div>
+          <div class="skill-description">用于将微信公众号文章保真转存为飞书云文档。</div>
+          <div class="skill-tags"><span class="skill-tag">feishu</span><span class="skill-tag">wechat</span><span class="skill-tag">archive</span><span class="skill-tag">docs</span></div>
+          <div class="skill-created"><span>🌱 2026-08-04</span><span>⚡ 2026-08-04</span></div>
+        </div>
+        <div class="skill-card" data-cat="productivity">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="feishu-workspace-automation">feishu-workspace-automation</div>
+              
+            </div>
+            <span class="skill-category" title="productivity">效率工具/feishu-workspace-automation</span>
+          </div>
+          <div class="skill-description">Use when automating Feishu/Lark workspace resources via CLI.</div>
+          <div class="skill-tags"><span class="skill-tag">feishu</span><span class="skill-tag">lark</span><span class="skill-tag">cli</span><span class="skill-tag">workspace</span></div>
+          <div class="skill-created"><span class="agent">AGENT 创建</span><span>🌱 2026-08-04</span><span style="color:#f5c95c">✏️ 2026-08-04</span></div>
+        </div>
+        <div class="skill-card" data-cat="productivity">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="google-workspace">Google 套件</div>
+              <div class="skill-name-en">google-workspace</div>
+            </div>
+            <span class="skill-category" title="productivity">效率工具/google-workspace</span>
+          </div>
+          <div class="skill-description">Gmail、日历、云端硬盘、文档、表格（gws CLI 或 Python）。</div>
+          <div class="skill-tags"><span class="skill-tag">Google</span><span class="skill-tag">Gmail</span><span class="skill-tag">Calendar</span><span class="skill-tag">Drive</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="productivity">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="maps">地图服务</div>
+              <div class="skill-name-en">maps</div>
+            </div>
+            <span class="skill-category" title="productivity">效率工具/maps</span>
+          </div>
+          <div class="skill-description">通过 OpenStreetMap/OSRM 地理编码、POI、路线、时区。</div>
+          <div class="skill-tags"><span class="skill-tag">maps</span><span class="skill-tag">geocoding</span><span class="skill-tag">places</span><span class="skill-tag">routing</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="productivity">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="nano-pdf">PDF 智能编辑</div>
+              <div class="skill-name-en">nano-pdf</div>
+            </div>
+            <span class="skill-category" title="productivity">效率工具/nano-pdf</span>
+          </div>
+          <div class="skill-description">用自然语言指令编辑现有 PDF 中的文字。</div>
+          <div class="skill-tags"><span class="skill-tag">PDF</span><span class="skill-tag">Documents</span><span class="skill-tag">Editing</span><span class="skill-tag">NLP</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="productivity">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="notion">Notion 笔记</div>
+              <div class="skill-name-en">notion</div>
+            </div>
+            <span class="skill-category" title="productivity">效率工具/notion</span>
+          </div>
+          <div class="skill-description">Notion API + ntn CLI：页面、数据库、Markdown、Workers。</div>
+          <div class="skill-tags"><span class="skill-tag">Notion</span><span class="skill-tag">Productivity</span><span class="skill-tag">Notes</span><span class="skill-tag">Database</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="productivity">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="ocr-and-documents">OCR 文档提取</div>
+              <div class="skill-name-en">ocr-and-documents</div>
+            </div>
+            <span class="skill-category" title="productivity">效率工具/ocr-and-documents</span>
+          </div>
+          <div class="skill-description">从 PDF/扫描件提取文本（pymupdf、marker-pdf）。</div>
+          <div class="skill-tags"><span class="skill-tag">PDF</span><span class="skill-tag">Documents</span><span class="skill-tag">Research</span><span class="skill-tag">Arxiv</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="productivity">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="pdf">PDF 处理</div>
+              <div class="skill-name-en">pdf</div>
+            </div>
+            <span class="skill-category" title="productivity">效率工具/pdf</span>
+          </div>
+          <div class="skill-description">创建、合并、拆分、填写、加密 PDF 文件。</div>
+          <div class="skill-tags"><span class="skill-tag">PDF</span><span class="skill-tag">Documents</span><span class="skill-tag">Forms</span><span class="skill-tag">Office</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="productivity">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="powerpoint">PPT 制作</div>
+              <div class="skill-name-en">powerpoint</div>
+            </div>
+            <span class="skill-category" title="productivity">效率工具/powerpoint</span>
+          </div>
+          <div class="skill-description">创建、读取、编辑 .pptx 演示文稿与模板。</div>
+          <div class="skill-tags"><span class="skill-tag">PowerPoint</span><span class="skill-tag">PPTX</span><span class="skill-tag">Presentations</span><span class="skill-tag">Office</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="productivity">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="teams-meeting-pipeline">Teams 会议管线</div>
+              <div class="skill-name-en">teams-meeting-pipeline</div>
+            </div>
+            <span class="skill-category" title="productivity">效率工具/teams-meeting-pipeline</span>
+          </div>
+          <div class="skill-description">Teams 会议摘要、回放、Graph 订阅集成。</div>
+          <div class="skill-tags"><span class="skill-tag">Teams</span><span class="skill-tag">Microsoft Graph</span><span class="skill-tag">Meetings</span><span class="skill-tag">Productivity</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="productivity">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="xlsx">Excel 表格</div>
+              <div class="skill-name-en">xlsx</div>
+            </div>
+            <span class="skill-category" title="productivity">效率工具/xlsx</span>
+          </div>
+          <div class="skill-description">创建、读取、编辑 Excel .xlsx 电子表格与 CSV。</div>
+          <div class="skill-tags"><span class="skill-tag">Excel</span><span class="skill-tag">XLSX</span><span class="skill-tag">Spreadsheets</span><span class="skill-tag">Office</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="research">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="arxiv">论文搜索</div>
+              <div class="skill-name-en">arxiv</div>
+            </div>
+            <span class="skill-category" title="research">研究/arxiv</span>
+          </div>
+          <div class="skill-description">按关键词、作者、分类或 ID 搜索 arXiv 论文。</div>
+          <div class="skill-tags"><span class="skill-tag">Research</span><span class="skill-tag">Arxiv</span><span class="skill-tag">Papers</span><span class="skill-tag">Academic</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="research">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="blogwatcher">博客监控</div>
+              <div class="skill-name-en">blogwatcher</div>
+            </div>
+            <span class="skill-category" title="research">研究/blogwatcher</span>
+          </div>
+          <div class="skill-description">通过 blogwatcher-cli 监控博客与 RSS/Atom 订阅源。</div>
+          <div class="skill-tags"><span class="skill-tag">RSS</span><span class="skill-tag">Blogs</span><span class="skill-tag">Feed-Reader</span><span class="skill-tag">Monitoring</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="research">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="grounded-citations">grounded-citations</div>
+              
+            </div>
+            <span class="skill-category" title="research">研究/grounded-citations</span>
+          </div>
+          <div class="skill-description">Ground answers and documents in cited, verifiable sources.</div>
+          <div class="skill-tags"><span class="skill-tag">Research</span><span class="skill-tag">Citations</span><span class="skill-tag">Grounding</span><span class="skill-tag">Sources</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="research">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="llm-wiki">LLM 知识库</div>
+              <div class="skill-name-en">llm-wiki</div>
+            </div>
+            <span class="skill-category" title="research">研究/llm-wiki</span>
+          </div>
+          <div class="skill-description">Karpathy 的 LLM Wiki：构建/查询互链 Markdown 知识库。</div>
+          <div class="skill-tags"><span class="skill-tag">wiki</span><span class="skill-tag">knowledge-base</span><span class="skill-tag">research</span><span class="skill-tag">notes</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="research">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="polymarket">预测市场</div>
+              <div class="skill-name-en">polymarket</div>
+            </div>
+            <span class="skill-category" title="research">研究/polymarket</span>
+          </div>
+          <div class="skill-description">查询 Polymarket：市场、价格、订单簿、历史数据。</div>
+          <div class="skill-tags"><span class="skill-tag">polymarket</span><span class="skill-tag">prediction-markets</span><span class="skill-tag">market-data</span><span class="skill-tag">trading</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="research">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="research-paper-writing">论文写作</div>
+              <div class="skill-name-en">research-paper-writing</div>
+            </div>
+            <span class="skill-category" title="research">研究/research-paper-writing</span>
+          </div>
+          <div class="skill-description">为 NeurIPS/ICML/ICLR 撰写 ML 论文：从设计到投稿。</div>
+          <div class="skill-tags"><span class="skill-tag">Research</span><span class="skill-tag">Paper Writing</span><span class="skill-tag">Experiments</span><span class="skill-tag">ML</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="research">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="trend-intelligence-pipelines">trend-intelligence-pipelines</div>
+              
+            </div>
+            <span class="skill-category" title="research">研究/trend-intelligence-pipelines</span>
+          </div>
+          <div class="skill-description">Use when archiving multi-source trends into data stores.</div>
+          <div class="skill-tags"><span class="skill-tag">trends</span><span class="skill-tag">intelligence</span><span class="skill-tag">mcp</span><span class="skill-tag">aggregation</span></div>
+          <div class="skill-created"><span class="agent">AGENT 创建</span><span>🌱 2026-08-04</span><span style="color:#f5c95c">✏️ 2026-08-04</span></div>
+        </div>
+        <div class="skill-card" data-cat="smart-home">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="openhue">智能灯光</div>
+              <div class="skill-name-en">openhue</div>
+            </div>
+            <span class="skill-category" title="smart-home">智能家居/openhue</span>
+          </div>
+          <div class="skill-description">通过 OpenHue CLI 控制飞利浦 Hue 灯、场景、房间。</div>
+          <div class="skill-tags"><span class="skill-tag">Smart-Home</span><span class="skill-tag">Hue</span><span class="skill-tag">Lights</span><span class="skill-tag">IoT</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="social-media">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="xurl">X 社交</div>
+              <div class="skill-name-en">xurl</div>
+            </div>
+            <span class="skill-category" title="social-media">社交媒体/xurl</span>
+          </div>
+          <div class="skill-description">通过 xurl CLI 使用 X/Twitter：帖子搜索、发布、私信、媒体。</div>
+          <div class="skill-tags"><span class="skill-tag">twitter</span><span class="skill-tag">x</span><span class="skill-tag">social-media</span><span class="skill-tag">xurl</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="software-development">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="dogfood">应用探测</div>
+              <div class="skill-name-en">dogfood</div>
+            </div>
+            <span class="skill-category" title="software-development">软件开发/dogfood</span>
+          </div>
+          <div class="skill-description">Web 应用探索性 QA：找 bug、收集证据、输出报告。</div>
+          <div class="skill-tags"><span class="skill-tag">qa</span><span class="skill-tag">testing</span><span class="skill-tag">browser</span><span class="skill-tag">web</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="software-development">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="hermes-agent-skill-authoring">技能编写规范</div>
+              <div class="skill-name-en">hermes-agent-skill-authoring</div>
+            </div>
+            <span class="skill-category" title="software-development">软件开发/hermes-agent-skill-authoring</span>
+          </div>
+          <div class="skill-description">编写仓库内 SKILL.md：frontmatter 与结构规范。</div>
+          <div class="skill-tags"><span class="skill-tag">skills</span><span class="skill-tag">authoring</span><span class="skill-tag">hermes-agent</span><span class="skill-tag">conventions</span></div>
+          <div class="skill-created"><span>🌱 2026-08-04</span><span>⚡ 2026-08-04</span></div>
+        </div>
+        <div class="skill-card" data-cat="software-development">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="inspecting-hermes-desktop-dom">桌面 DOM 检查</div>
+              <div class="skill-name-en">inspecting-hermes-desktop-dom</div>
+            </div>
+            <span class="skill-category" title="software-development">软件开发/inspecting-hermes-desktop-dom</span>
+          </div>
+          <div class="skill-description">通过 CDP 读取 Hermes 桌面应用实时 DOM/CSS。</div>
+          <div class="skill-tags"><span class="skill-tag">desktop</span><span class="skill-tag">electron</span><span class="skill-tag">cdp</span><span class="skill-tag">dom</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="software-development">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="node-inspect-debugger">Node 调试</div>
+              <div class="skill-name-en">node-inspect-debugger</div>
+            </div>
+            <span class="skill-category" title="software-development">软件开发/node-inspect-debugger</span>
+          </div>
+          <div class="skill-description">通过 --inspect + Chrome DevTools 协议 CLI 调试 Node.js。</div>
+          <div class="skill-tags"><span class="skill-tag">debugging</span><span class="skill-tag">nodejs</span><span class="skill-tag">node-inspect</span><span class="skill-tag">cdp</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="software-development">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="plan">计划写作</div>
+              <div class="skill-name-en">plan</div>
+            </div>
+            <span class="skill-category" title="software-development">软件开发/plan</span>
+          </div>
+          <div class="skill-description">把计划写成 Markdown 存到 .hermes/plans/；不执行。</div>
+          <div class="skill-tags"><span class="skill-tag">planning</span><span class="skill-tag">plan-mode</span><span class="skill-tag">implementation</span><span class="skill-tag">workflow</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="software-development">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="python-debugpy">Python 调试</div>
+              <div class="skill-name-en">python-debugpy</div>
+            </div>
+            <span class="skill-category" title="software-development">软件开发/python-debugpy</span>
+          </div>
+          <div class="skill-description">调试 Python：pdb REPL + debugpy 远程调试（DAP）。</div>
+          <div class="skill-tags"><span class="skill-tag">debugging</span><span class="skill-tag">python</span><span class="skill-tag">pdb</span><span class="skill-tag">debugpy</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="software-development">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="requesting-code-review">提交前审查</div>
+              <div class="skill-name-en">requesting-code-review</div>
+            </div>
+            <span class="skill-category" title="software-development">软件开发/requesting-code-review</span>
+          </div>
+          <div class="skill-description">提交前代码审查：安全扫描、质量门槛、自动修复。</div>
+          <div class="skill-tags"><span class="skill-tag">code-review</span><span class="skill-tag">security</span><span class="skill-tag">verification</span><span class="skill-tag">quality</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="software-development">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="simplify-code">代码简化</div>
+              <div class="skill-name-en">simplify-code</div>
+            </div>
+            <span class="skill-category" title="software-development">软件开发/simplify-code</span>
+          </div>
+          <div class="skill-description">4 个并行智能体清理最近的代码改动。</div>
+          <div class="skill-tags"><span class="skill-tag">code-review</span><span class="skill-tag">cleanup</span><span class="skill-tag">refactor</span><span class="skill-tag">delegation</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="software-development">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="spike">技术验证</div>
+              <div class="skill-name-en">spike</div>
+            </div>
+            <span class="skill-category" title="software-development">软件开发/spike</span>
+          </div>
+          <div class="skill-description">构建前的一次性实验，快速验证想法可行性。</div>
+          <div class="skill-tags"><span class="skill-tag">spike</span><span class="skill-tag">prototype</span><span class="skill-tag">experiment</span><span class="skill-tag">feasibility</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="software-development">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="systematic-debugging">系统化调试</div>
+              <div class="skill-name-en">systematic-debugging</div>
+            </div>
+            <span class="skill-category" title="software-development">软件开发/systematic-debugging</span>
+          </div>
+          <div class="skill-description">4 阶段根因调试：先理解问题，再动手修复。</div>
+          <div class="skill-tags"><span class="skill-tag">debugging</span><span class="skill-tag">troubleshooting</span><span class="skill-tag">problem-solving</span><span class="skill-tag">root-cause</span></div>
+          <div class="skill-created"></div>
+        </div>
+        <div class="skill-card" data-cat="software-development">
+          <div class="skill-header">
+            <div class="skill-name-wrap">
+              <div class="skill-name" title="test-driven-development">测试驱动开发</div>
+              <div class="skill-name-en">test-driven-development</div>
+            </div>
+            <span class="skill-category" title="software-development">软件开发/test-driven-development</span>
+          </div>
+          <div class="skill-description">TDD：强制 RED-GREEN-REFACTOR 循环，测试先行。</div>
+          <div class="skill-tags"><span class="skill-tag">testing</span><span class="skill-tag">tdd</span><span class="skill-tag">development</span><span class="skill-tag">quality</span></div>
+          <div class="skill-created"></div>
+        </div></div><div class="empty-note" id="no-matches" style="display:none">没有匹配的技能</div>
+</div>
+
+<div class="section">
+  <h2 class="section-title"><span>🧠</span> 持久记忆<span class="tag">7 条</span></h2>
+  <div class="memory-card"><span class="memory-type system">系统</span><div class="memory-content" title="Windows host: cua-driver 0.17.0 is installed for the computer_use toolset (binary at ~/.local/bin/cua-driver.exe and %LOCALAPPDATA%\Programs\Cua\cua-driver\bin\).">Windows 主机：已为 computer_use 工具集安装 cua-driver 0.17.0（二进制位于 ~/.local/bin/cua-driver.exe 和 %LOCALAPPDATA%\Programs\Cua\cua-driver\bin\）。</div></div><div class="memory-card"><span class="memory-type user">用户</span><div class="memory-content" title="User has an &quot;evolution tracking&quot; system: script D:\hermes\scripts\evolution_report.py scans skills/memory/sessions and renders D:\hermes\evolution\evolution.html (daily timeline of my growth). Regenerated daily by a cron job. User likes seeing what evolved (skills, memory, sessions).">用户建立了「进化记录」系统：脚本 D:\hermes\scripts\evolution_report.py 会扫描技能、记忆与会话，生成 D:\hermes\evolution\evolution.html（我的成长每日时间线）。每日由定时任务自动更新；用户喜欢看到我的进化成果（技能、记忆、会话）。</div></div><div class="memory-card"><span class="memory-type user">用户</span><div class="memory-content">WeChat push is configured: Hermes gateway runs as Windows logon service (Hermes_Gateway schtasks) with the weixin iLink bot (account 86e555e07d0a@im.bot; user chat id o9cq803nxMExYxX7UAMrK-CjpmD0@im.wechat, WEIXIN_HOME_CHANNEL set, DM policy allowlist). Cron intel scan (hourly) and evolution report (daily) deliver to weixin. iLink has 30s rate-limit cooldowns after sends.</div></div><div class="memory-card"><span class="memory-type user">用户</span><div class="memory-content">User uses Google Gemini API for Hermes image recognition. Hermes vision is configured with provider `gemini` and model `gemini-flash-latest`; credentials are stored in D:\hermes\.env. Never store or repeat the API key itself. User previously exposed and revoked a key, so remind them to keep keys out of chat, code, and desktop text files.</div></div><div class="memory-card"><span class="memory-type user">用户</span><div class="memory-content">User runs CC Switch (cc-switch, Tauri) as API provider switcher for Hermes/Codex/Claude: data in ~/.cc-switch/cc-switch.db (SQLite), exe at D:\Users\Administrator\AppData\Local\Programs\CC Switch\cc-switch.exe. Hermes app_type rows mirror D:\hermes\config.yaml custom_providers and are UI-delete-locked; removal = edit config + DB cleanup (see cc-switch skill).</div></div><div class="memory-card"><span class="memory-type user">用户</span><div class="memory-content">Official Lark/Feishu CLI v1.0.82 is installed globally at %APPDATA%\npm\lark-cli with 27 lark-* Agent Skills under ~/.agents/skills. Bound to Hermes app cli_aafbc0f87d385be5 in user-default mode; user 用户315365 is OAuth-verified with valid token and broad scopes including calendar read/write. Hermes Feishu gateway uses WebSocket and is connected.</div></div><div class="memory-card"><span class="memory-type core">核心</span><div class="memory-content">Global trends archive Base is https://vcnfs7v9m37p.feishu.cn/base/W8rzb4wB9anPowsLuTycJWM5ntf (base W8rzb4wB9anPowsLuTycJWM5ntf, table 热榜明细/tblQPMw2tEl9ZcYz). Future mcp-trends-hub results go here; use 唯一键 for dedupe.</div></div>
+</div>
+
+<div class="section">
+  <h2 class="section-title"><span>⚙️</span> 自动化<span class="tag">2 个任务</span></h2>
+  <div class="cron-grid"><div class="cron-card"><div class="nm">进化记录每日更新</div><div class="sch">⏰ {&#x27;kind&#x27;: &#x27;cron&#x27;, &#x27;expr&#x27;: &#x27;0 22 * * *&#x27;, &#x27;display&#x27;: &#x27;0 22 * * *&#x27;}</div></div><div class="cron-card"><div class="nm">主动情报扫描</div><div class="sch">⏰ {&#x27;kind&#x27;: &#x27;cron&#x27;, &#x27;expr&#x27;: &#x27;0 * * * *&#x27;, &#x27;display&#x27;: &#x27;0 * * * *&#x27;}</div></div></div>
+</div>
+
+<div class="section">
+  <h2 class="section-title"><span>🔮</span> 未来方向<span class="tag">规划中的进化</span></h2>
+  <div class="future-grid"><div class="future-card"><div class="icon">🚀</div><div class="title">探索新领域</div><div class="desc">在创意与多媒体分类下创建更多技能，扩展能力边界。</div></div><div class="future-card"><div class="icon">🔧</div><div class="title">打磨已有技能</div><div class="desc">把高频使用的技能持续迭代到 v2+，沉淀实战经验。</div></div><div class="future-card"><div class="icon">🧠</div><div class="title">丰富长期记忆</div><div class="desc">记录更多用户偏好与工作习惯，让协作越来越默契。</div></div><div class="future-card"><div class="icon">📊</div><div class="title">进化周报</div><div class="desc">每周自动生成进化摘要，量化成长曲线。</div></div></div>
+</div>
+
+<div class="footer">
+  <p>🧬 Hermes 进化记录 · 由 evolution_report.py 自动生成</p>
+  <p><code>D:\hermes\skills</code> · <code>D:\hermes\state.db</code></p>
+</div>
+
+<script>
+const chips=document.querySelectorAll('.chip');
+chips.forEach(c=>c.addEventListener('click',()=>{
+  chips.forEach(x=>x.classList.remove('on'));c.classList.add('on');
+  const cat=c.dataset.cat;let any=false;
+  document.querySelectorAll('.skill-card').forEach(card=>{
+    const show=cat==='all'||card.dataset.cat===cat;
+    card.style.display=show?'':'none';
+    if(show)any=true;
+  });
+  document.getElementById('no-matches').style.display=any?'none':'block';
+}));
+</script>
+</body>
+</html>
